@@ -44,6 +44,59 @@ class User < ActiveRecord::Base
     return user if user.has_password?(submitted_password)
   end
   
+  # Why does this alternative implementation work?
+  # ---------------- >
+  #def User.authenticate(email, submitted_password)
+  #    user = find_by_email(email)
+  #    return nil  if user.nil?
+  #    return user if user.has_password?(submitted_password)
+  #end
+  # ---------------- >
+  # Answer: The only difference to the first implementation is
+  # that 'self' is exchanged with 'User'. But 'self' in a 
+  # method definition defines a class method in Ruby, so exchanging
+  # 'self' with 'User' is litterarly the same thing.
+  
+  # What is so fuzzy about this method?
+  # ---------------- >
+  #def self.authenticate(email, submitted_password)
+  #    user = find_by_email(email)
+  #    return nil  if user.nil?
+  #    return user if user.has_password?(submitted_password)
+  #    return nil
+  #end
+  # ---------------- >
+  # Answer: By default the original implementation returns nil (since
+  # no return value is defined). This last line might be good for clairification
+  # but is utterly redundant and therefor can be ommited
+  
+  #def self.authenticate(email, submitted_password)
+  #  user = find_by_email(email)
+  #  if user.nil?
+  #    nil
+  #  elsif user.has_password?(submitted_password)
+  #    user
+  #  else
+  #    nil
+  #  end
+  #end
+  
+  # Comment: Same this as above, but omitting a default nil return value
+  #def self.authenticate(email, submitted_password)
+  #  user = find_by_email(email)
+  #  if user.nil?
+  #    nil
+  #  elsif user.has_password?(submitted_password)
+  #    user
+  #  end
+  #end
+  
+  # Comment: One line if statement with to cases required as YES
+  #def self.authenticate(email, submitted_password)
+  #  user = find_by_email(email)
+  #  user && user.has_password?(submitted_password) ? user : nil
+  #end
+  
   private
     def encrypt_password
       self.salt = make_salt unless has_password?(password)
